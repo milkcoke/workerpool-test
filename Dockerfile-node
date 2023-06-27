@@ -1,0 +1,8 @@
+FROM node:16.18.0-alpine
+LABEL authors="seunghunmoon023"
+
+WORKDIR ~/workerpool-test
+
+COPY dist config ecosystem.config.js package.json ./
+
+RUN yarn install
