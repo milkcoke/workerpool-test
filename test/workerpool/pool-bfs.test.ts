@@ -1,30 +1,26 @@
 import workerpool, {WorkerPool} from 'workerpool'
+import {oneSecond} from './oneSecond'
 
 type Task = {
   from: string
   to: string
 }
 
-const path = new Map<string, string[]>()
+const maps = new Map<string, string[]>()
 // 먼저 이렇게 map 정보를 가지지 않음.
 // 동적으로 가져와야함..
 
 // 1depth
-path.set('A', ['B', 'C', 'D'])
+maps.set('A', ['B', 'C', 'D'])
 // 2depth
-path.set('B', ['E'])
-path.set('D', ['F'])
+maps.set('B', ['E'])
+maps.set('D', ['F'])
 // 3depth
-path.set('F', ['G'])
+maps.set('F', ['G'])
 
-function oneSecond(map: Task) {
-  const secondAfter = Date.now() + 1_000
-  while (Date.now() < secondAfter) {}
-  console.log(`${map.to} is done!`)
-}
 
 function getNext(map: Task) : string[] | undefined {
-  return path.get(map.from)
+  return maps.get(map.from)
 }
 describe('BFS logic', ()=>{
   let pool: WorkerPool
@@ -58,9 +54,10 @@ describe('BFS logic', ()=>{
         const task = taskQueue.pop()
         poolPromiseQueue.push(pool.exec(oneSecond, [task]))
 
-        // 매핑후 테스트 추가
-        if (path.has(task.to)) {
-          const nexts = path.get(task.to)
+        // 매핑후 테스크 추가
+        if (maps.has(task.to)) {
+          // 실전 코드에선 여기서 매핑정보를 불러와서 동적으로 다음 테스크 추가
+          const nexts = maps.get(task.to)
           for (const next of nexts) {
             taskQueue.push({
               from: task.to,
@@ -72,7 +69,6 @@ describe('BFS logic', ()=>{
 
       await Promise.all(poolPromiseQueue)
     }
-
 
     await pool.terminate(true)
 
