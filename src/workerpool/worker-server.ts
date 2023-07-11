@@ -45,6 +45,11 @@ app.get('/status/local', async (req, res)=>{
   return res.json(process.memoryUsage())
 })
 
+app.get('/thread/terminate', async (req, res)=>{
+
+  await localPool.terminate(true)
+  return res.json("terminated local pool")
+})
 
 app.get('/gc', (req,res)=>{
   if (global.gc) {
