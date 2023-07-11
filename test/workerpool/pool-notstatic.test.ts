@@ -1,6 +1,7 @@
-import workerpool, {WorkerPool} from 'workerpool'
-import {oneSecond} from './oneSecond'
-import Task from './task'
+import workerpool from 'workerpool'
+import {join} from 'path'
+import Task from '../../src/workerpool/task'
+import {oneSecond} from '../../src/workerpool/worker.helper2'
 
 
 const maps = new Map<string, string[]>()
@@ -16,15 +17,9 @@ maps.set('D', ['F'])
 maps.set('F', ['G'])
 
 describe('pool-nonstatic', ()=>{
-  let pool: WorkerPool
-
-
-  afterEach(async ()=>{
-    await pool?.terminate(true)
-  })
 
   test('fail - nonstatic test', async ()=> {
-    pool = workerpool.pool({
+    const pool = workerpool.pool({
       minWorkers: 0,
       maxWorkers: 5,
     })
@@ -71,6 +66,50 @@ describe('pool-nonstatic', ()=>{
   )
 
   test('success - dedicated workerpool', async ()=>{
+    const pool = workerpool.pool(join(__dirname, '../../dist/src', 'workerpool', 'wait-worker.js'), {
+      minWorkers: 0,
+      maxWorkers: 5,
+      workerType: 'thread',
+      //@ts-ignore
+      maxQueueSize: 30
+    })
 
+    console.dir(pool)
+
+    const task = new Task('A', 'A')
+    const taskQueue : Task[] = [
+      task
+    ]
+
+    const poolPromiseQueue = []
+
+    console.time('tasks')
+
+    while(taskQueue.length !== 0) {
+
+      const currentDepthSize = taskQueue.length
+
+      for (let i = 0; i < currentDepthSize; i++) {
+        const task = taskQueue.pop()
+        poolPromiseQueue.push(pool.exec('oneSecond', [task]))
+
+        if (maps.has(task.to)) {
+          // 실전 코드에선 여기서 매핑정보를 불러와서 동적으로 다음 테스크 추가
+          const nexts = maps.get(task.to)
+          for (const next of nexts) {
+            taskQueue.push({
+              from: task.to,
+              to: next
+            })
+          }
+        }
+      }
+
+      console.dir(pool.stats())
+      await Promise.all(poolPromiseQueue)
+    }
+
+    console.dir(pool.stats())
+    console.timeEnd('tasks')
   })
 })

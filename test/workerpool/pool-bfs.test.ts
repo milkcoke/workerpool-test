@@ -1,5 +1,5 @@
 import workerpool, {WorkerPool} from 'workerpool'
-import {oneSecond} from './oneSecond'
+import {oneSecond} from '../../src/workerpool/worker.helper2'
 
 type Task = {
   from: string
