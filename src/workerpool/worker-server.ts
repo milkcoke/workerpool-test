@@ -6,6 +6,8 @@ import * as process from 'process'
 const workerPath = join(__dirname, "worker.helper.js");
 const workerPrintPath = join(__dirname, 'worker-id.helper.js')
 
+console.log('process id : ', process.pid)
+
 const pool = workerpool.pool(workerPath, {
   minWorkers: 0,
   maxWorkers: 4,
@@ -20,6 +22,8 @@ app.get('/status', (req, res)=>{
   return res.json(poolStatus)
 })
 
+// --v8-pool-size : nodejs 쓰레드수 최대값
+// process.env.UV_THREADPOOL_SIZE 워커 쓰레드 수 최대값
 let id = 1
 let localPool : WorkerPool
 app.get('/status/local', async (req, res)=>{
