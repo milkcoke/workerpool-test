@@ -22,8 +22,8 @@ app.get('/status', (req, res)=>{
   return res.json(poolStatus)
 })
 
-// --v8-pool-size : nodejs 쓰레드수 최대값
-// process.env.UV_THREADPOOL_SIZE 워커 쓰레드 수 최대값
+// --v8-pool-size : nodejs 쓰레드수 최대값 (used by v8 engine)
+// process.env.UV_THREADPOOL_SIZE 워커 쓰레드 수 최대값 (used by libuv)
 let id = 1
 let localPool : WorkerPool
 app.get('/status/local', async (req, res)=>{
